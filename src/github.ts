@@ -28,6 +28,28 @@ export class GitHubClient {
   }
 
   /**
+   * Get the latest commit SHA on the default branch
+   */
+  async getLatestCommitSha(): Promise<string | null> {
+    try {
+      const { data: repoData } = await this.octokit.repos.get({
+        owner: this.owner,
+        repo: this.repo,
+      });
+      
+      const { data: ref } = await this.octokit.git.getRef({
+        owner: this.owner,
+        repo: this.repo,
+        ref: `heads/${repoData.default_branch}`,
+      });
+      
+      return ref.object.sha.substring(0, 7); // Short SHA
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * List all files in the repository
    */
   async listTree(): Promise<Array<{ path: string; sha: string }>> {

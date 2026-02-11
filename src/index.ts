@@ -8,6 +8,7 @@ import {
   Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import { createRequire } from 'module';
 
 import { GitHubClient, GitHubConfig } from './github.js';
 import { cache } from './cache.js';
@@ -15,6 +16,11 @@ import { writeQueue } from './queue.js';
 import { AsyncWriter } from './writer.js';
 import { parseIndex } from './index-gen.js';
 import { log } from './logger.js';
+
+// Load package.json for version
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json');
+const VERSION = pkg.version;
 
 // Configuration schema - passed via MCP settings
 const ConfigSchema = z.object({
@@ -158,7 +164,7 @@ class MemoryMCPServer {
     this.server = new Server(
       {
         name: 'memory-mcp',
-        version: '1.0.0',
+        version: VERSION,
       },
       {
         capabilities: {
@@ -356,6 +362,10 @@ class MemoryMCPServer {
       throw new Error(`Cannot access repository: ${config.repo}. Check token permissions.`);
     }
 
+    // Log storage repo info
+    const commitSha = await this.github.getLatestCommitSha();
+    log('init', `Storage: ${config.repo}${commitSha ? ` @ ${commitSha}` : ''}`);
+
     // Fetch full tree and populate cache
     log('init', 'Fetching repository contents...');
     const tree = await this.github.listTree();
@@ -390,6 +400,8 @@ class MemoryMCPServer {
 
 // Main entry point
 async function main(): Promise<void> {
+  log('init', `memory-mcp v${VERSION}`);
+
   // Parse config from environment or command line
   // MCP clients pass config via environment variables
   const repo = process.env.MEMORY_MCP_REPO;
