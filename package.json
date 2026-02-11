@@ -1,5 +1,5 @@
 {
-  "name": "@clayton-duarte/memory-mcp",
+  "name": "@lesgo/memory-mcp",
   "version": "1.0.0",
   "description": "Personal External Brain MCP Server - A stateless MCP server for syncing templates, standards, and knowledge via GitHub",
   "type": "module",
@@ -10,10 +10,6 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/clayton-duarte/memory-mcp.git"
