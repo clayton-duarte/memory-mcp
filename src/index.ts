@@ -30,7 +30,7 @@ const ReadMemorySchema = z.object({
 });
 
 const SaveMemorySchema = z.object({
-  category: z.string().describe('Category folder (e.g., "templates", "standards", "knowledge"). Will be created if it does not exist.'),
+  category: z.string().describe('Category folder for organizing memories. Use any category that makes sense (e.g., "projects/acme", "people/john", "concepts/auth"). Supports nested paths for knowledge graph structure. Will be created if it does not exist.'),
   name: z.string().describe('File name (e.g., "user-story.md" or "user-story")'),
   content: z.string().describe('Content of the memory file'),
 });
@@ -47,7 +47,7 @@ const SearchMemorySchema = z.object({
 const TOOLS: Tool[] = [
   {
     name: 'list_knowledge',
-    description: 'List all available memory files organized by category. Returns the index of templates, standards, and knowledge files.',
+    description: 'List all saved memories organized by category. Use when user asks "what do you remember?" or wants to see all stored knowledge.',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -56,7 +56,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'read_memory',
-    description: 'Read the content of a specific memory file. Fast cached reads.',
+    description: 'Read a specific memory file by path. Use after list_knowledge to retrieve full content of a saved item.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -70,13 +70,13 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'save_memory',
-    description: 'Create or update a memory file. Saves are async and non-blocking. Category folders are auto-created.',
+    description: 'Save information to persistent memory. Use when user says "remember this", "save this", "store this", or asks you to memorize something. Memories persist across sessions.',
     inputSchema: {
       type: 'object',
       properties: {
         category: {
           type: 'string',
-          description: 'Category folder (e.g., "templates", "standards", "knowledge")',
+          description: 'Category folder for organizing memories. Use any category that fits (e.g., "projects/acme", "people/john", "concepts/auth", "templates"). Supports nested paths for knowledge graph structure.',
         },
         name: {
           type: 'string',
@@ -92,7 +92,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'delete_memory',
-    description: 'Delete a memory file. Deletes are async and non-blocking.',
+    description: 'Delete a memory file. Use when user wants to forget or remove saved information.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -106,7 +106,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'search_memory',
-    description: 'Search across all memory files by keyword. Searches both file paths and content.',
+    description: 'Search across all saved memories by keyword. Use when user says "search memory", "search for", "find in memory", or asks to recall/look up previously saved information.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -119,6 +119,34 @@ const TOOLS: Tool[] = [
     },
   },
 ];
+
+const SERVER_INSTRUCTIONS = `
+Memory MCP is a persistent memory system for AI agents. Use it to store and retrieve information across sessions.
+
+## When to use this server:
+- When the user says "remember", "save this", "store this", or asks you to memorize something → use save_memory
+- When the user says "search memory", "search for", "find in memory", or wants to look up saved information → use search_memory
+- When the user asks "what do you remember", "recall", or references previously saved information → use search_memory or list_knowledge
+- When the user wants to see all saved knowledge → use list_knowledge
+- When the user wants to read a specific saved item → use read_memory
+- When the user wants to forget/delete something → use delete_memory
+
+## Categories:
+Use any category that makes sense for the information being stored. Categories support nested paths to build a knowledge graph structure:
+- "projects/acme" - project-specific knowledge
+- "people/john" - information about people
+- "concepts/authentication" - technical concepts
+- "templates/stories" - reusable templates
+- "preferences/coding" - user preferences
+
+Choose or create categories based on how the user would naturally organize and retrieve the information.
+
+## Examples:
+- "Remember my coding style preferences" → save_memory with category "preferences/coding"
+- "Remember this template for user stories" → save_memory with category "templates/stories"
+- "Remember John prefers async/await" → save_memory with category "people/john"
+- "Search memory for API standards" → search_memory with query "API standards"
+`.trim();
 
 class MemoryMCPServer {
   private server: Server;
@@ -136,6 +164,7 @@ class MemoryMCPServer {
         capabilities: {
           tools: {},
         },
+        instructions: SERVER_INSTRUCTIONS,
       }
     );
 
@@ -247,7 +276,7 @@ class MemoryMCPServer {
   private async handleSaveMemory(args: unknown) {
     const { category, name, content } = SaveMemorySchema.parse(args);
     
-    if (!this.writer) {
+    if (!this.writer || !this.config) {
       return {
         content: [{ type: 'text', text: 'Server not initialized' }],
         isError: true,
@@ -263,8 +292,10 @@ class MemoryMCPServer {
       };
     }
 
+    const remoteUrl = `https://github.com/${this.config.repo}/blob/main/${result.path}`;
+
     return {
-      content: [{ type: 'text', text: `Saved: ${result.path}` }],
+      content: [{ type: 'text', text: `Saved: ${result.path}\nRemote: ${remoteUrl}` }],
     };
   }
 

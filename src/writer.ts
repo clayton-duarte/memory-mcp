@@ -34,8 +34,12 @@ export class AsyncWriter {
       };
     }
 
-    // Normalize category and name
-    const normalizedCategory = category.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    // Normalize category and name (allow nested paths with slashes)
+    const normalizedCategory = category
+      .toLowerCase()
+      .replace(/[^a-z0-9-/]/g, '-')  // Allow slashes for nested paths
+      .replace(/\/+/g, '/')           // Collapse multiple slashes
+      .replace(/^\/|\/$/g, '');       // Trim leading/trailing slashes
     const normalizedName = name.endsWith('.md') || name.endsWith('.yaml') || name.endsWith('.json') 
       ? name 
       : `${name}.md`;
