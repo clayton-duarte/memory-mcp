@@ -53,4 +53,5 @@ Commit, push, and release a new version of memory-mcp.
 - Always review `git status` and `git diff` before committing
 - Ensure the build passes with `npm run build` before releasing
 - Version is automatically updated in package.json by `npm version`
-- Creating a GitHub Release automatically publishes to npm via GitHub Actions (using Trusted Publishing/OIDC)
+- Creating a GitHub Release automatically publishes to npm via GitHub Actions
+- Requires `NPM_TOKEN` (Automation token) secret in repository settings
