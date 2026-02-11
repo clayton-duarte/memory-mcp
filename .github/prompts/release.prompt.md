@@ -41,13 +41,16 @@ Commit, push, and release a new version of memory-mcp.
    git push origin main --tags
    ```
 
-7. **Publish to npm** (optional)
+7. **Create GitHub Release** (triggers npm publish via GitHub Actions)
    ```bash
-   npm publish --access public
+   gh release create v<version> --title "v<version>" --notes "<release notes>"
    ```
+   Include a "What's New" section with bullet points describing changes.
+   This automatically triggers the publish workflow which publishes to npm.
 
 ## Notes
 
 - Always review `git status` and `git diff` before committing
 - Ensure the build passes with `npm run build` before releasing
 - Version is automatically updated in package.json by `npm version`
+- Creating a GitHub Release automatically publishes to npm via GitHub Actions (using Trusted Publishing/OIDC)
