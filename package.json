@@ -5,14 +5,14 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "memory-mcp": "./dist/index.js"
+    "memory-mcp": "dist/index.js"
   },
   "files": [
     "dist"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/clayton-duarte/memory-mcp.git"
+    "url": "git+https://github.com/clayton-duarte/memory-mcp.git"
   },
   "scripts": {
     "build": "tsc",
