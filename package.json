@@ -1,0 +1,40 @@
+{
+  "name": "memory-mcp",
+  "version": "1.0.0",
+  "description": "Personal External Brain MCP Server - A stateless MCP server for syncing templates, standards, and knowledge via GitHub",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "memory-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "github",
+    "knowledge-base"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@octokit/rest": "^20.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
